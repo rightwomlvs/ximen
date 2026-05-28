@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>西門奇談書 - 智能聯動版</title>
+    <title>西門奇談書 - 智能聯動行動優化版</title>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
         * { box-sizing: border-box; }
@@ -56,7 +56,7 @@
             text-shadow: 0 0 10px rgba(0, 229, 255, 0.5); 
         }
 
-        /* 對話區 */
+        /* ------------------ 故事對話區 ------------------ */
         #dialog-view {
             display: flex;
             flex-direction: column;
@@ -90,16 +90,18 @@
             max-width: 650px;
         }
 
+        /* 預設桌機版：使用 Flex 橫向平分排列 */
         .options-area {
             padding: 30px;
             background: #111;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            display: flex;
+            flex-direction: row;
             gap: 15px;
             border-top: 1px solid #333;
         }
 
         .btn-option {
+            flex: 1;
             background: transparent;
             color: var(--neon-magenta);
             border: 2px solid var(--neon-magenta);
@@ -125,7 +127,7 @@
             transform: translateY(-2px);
         }
 
-        /* 副本區 */
+        /* ------------------ 5x5 副本區 ------------------ */
         #bingo-view {
             display: none;
             flex-direction: column;
@@ -272,8 +274,18 @@
             box-shadow: 0 0 15px rgba(255, 0, 255, 0.7);
         }
 
+        /* ------------------ RWD 行動裝置優化斷點 ------------------ */
         @media (max-width: 768px) {
-            .options-area { grid-template-columns: 1fr; }
+            /* 關鍵修正：切換為垂直單欄堆疊，對應你的紫色手繪線條 */
+            .options-area { 
+                flex-direction: column; 
+                padding: 20px;
+                gap: 12px;
+            }
+            .btn-option {
+                width: 100%;
+                min-height: 55px; /* 給予舒服的按壓高度 */
+            }
             .bingo-grid { gap: 6px; }
             .btn-regenerate, .btn-save { width: 100%; }
         }
@@ -309,10 +321,8 @@
 </div>
 
 <script>
-    // 全域變數用於儲存玩家的選擇，達成真聯動
     let userChoices = {};
 
-    // 任務情報庫（全面掛載屬性標籤）
     const taskPools = {
         magenta: [ 
             { text: "在六號出口彩虹斑馬線拍跳躍照", tags: ["outdoor"] },
@@ -332,7 +342,7 @@
             { text: "在街頭找人合照並比出專屬手勢", tags: ["subculture"] }
         ],
         yellow: [ 
-            { text: "朝聖老天祿滷味", tags: ["food", "snacks", "meat-only"] },
+            { text: "朝盛老天祿滷味", tags: ["food", "snacks", "meat-only"] },
             { text: "天天利美食坊吃半熟蛋滷肉飯", tags: ["food", "snacks", "meat-only"] },
             { text: "品嚐成都楊桃冰(新址)或蜂大咖啡", tags: ["food", "snacks", "veg", "cafe"] },
             { text: "萬年大樓地下美食街尋寶", tags: ["food", "indoor"] },
@@ -347,7 +357,6 @@
             { text: "尋找在地隱藏版無名小吃", tags: ["food", "snacks"] },
             { text: "光顧一間超過30年歷史的老店", tags: ["history"] },
             { text: "買一杯特色手搖飲並拍下霓虹招牌", tags: ["food", "snacks", "veg"] },
-            // 蔬食/素食專屬強化任務
             { text: "尋找西門町純素餐廳品嚐在地料理", tags: ["food", "veg", "restaurant"] },
             { text: "去觀音齋素食享用台式素自助餐", tags: ["food", "veg", "restaurant"] },
             { text: "在街頭尋找烤麻糬或地瓜球等全素小吃", tags: ["food", "veg", "snacks"] },
@@ -384,12 +393,11 @@
             { text: "跟隨一隻街貓或流浪狗的腳步三分鐘", tags: ["outdoor"] },
             { text: "尋找巷弄內不為人知的數字塗鴉", tags: ["subculture", "outdoor"] },
             { text: "發現三個不同語言的街頭標語", tags: [] },
-            { text: "尋找一處可以拍出賽步龐克感的霓虹巷", tags: ["subculture", "outdoor"] },
+            { text: "尋找一處可以拍出賽博龐克感的霓虹巷", tags: ["subculture", "outdoor"] },
             { text: "找出西門町舊址/舊城門的歷史標記", tags: ["history", "outdoor"] }
         ]
     };
 
-    // 決策流地圖：納入全新飲食三階段調查
     const storyData = {
         "Start": {
             en: "Welcome to Ximending! How are you exploring this maze today?",
@@ -447,7 +455,6 @@
             ],
             key: "heat"
         },
-        // 新增 1：飲食類別偏好調查
         "DietType": {
             en: "Dietary style protocol. What kind of food container interests you?",
             zh: "飲食偏好調查。巡禮西門町時，你更傾向哪一種用餐或歇腳的形式？",
@@ -458,7 +465,6 @@
             ],
             key: "dietType"
         },
-        // 新增 2：葷素調查
         "DietVeg": {
             en: "Dietary lifestyle filter. Any specific vegetarian requests?",
             zh: "飲食型態過濾。請問你的公會或個人是否有特定的素食習慣？",
@@ -468,7 +474,6 @@
             ],
             key: "dietVeg"
         },
-        // 新增 3：素食類別細分
         "VegType": {
             en: "Vegetarian specification sub-classification.",
             zh: "素食類別細分。為了精準對應隱藏版情報，請問具體的素食規範是？",
@@ -541,7 +546,6 @@
             btn.className = "btn-option";
             btn.innerText = opt.text;
             btn.onclick = () => {
-                // 如果該節點有定義儲存變數的Key，紀錄玩家的選擇
                 if (node.key && opt.data) {
                     userChoices[node.key] = opt.data;
                 }
@@ -551,39 +555,30 @@
         });
     }
 
-    // 關鍵升級：權重動態算分與絕對去重生成演算法
     function getFilteredAndScoredPool(poolId) {
         let items = [...taskPools[poolId]];
 
-        // 1. 嚴格素食過濾機制
         if (userChoices.dietVeg === "veg") {
-            // 如果玩家選素食，100% 排除帶有 'meat-only' 標籤的任務
             items = items.filter(item => !item.tags.includes("meat-only"));
         }
 
-        // 2. 聯動算分機制
         let scoredItems = items.map(item => {
-            let score = Math.random() * 0.3; // 加入極小隨機亂數，避免同分時排序死板
+            let score = Math.random() * 0.3;
 
-            // 根據玩家選擇的主題權重加分 (+5)
             if (userChoices.theme === "History" && item.tags.includes("history")) score += 5;
             if (userChoices.theme === "Subculture" && item.tags.includes("subculture")) score += 5;
             if (userChoices.theme === "Food" && item.tags.includes("food")) score += 5;
 
-            // 根據耐熱度加分
             if (userChoices.heat === "low" && item.tags.includes("indoor")) score += 3;
             if (userChoices.heat === "high" && item.tags.includes("outdoor")) score += 2;
 
-            // 根據飲食類別偏好加分
             if (userChoices.dietType && item.tags.includes(userChoices.dietType)) score += 4;
 
-            // 如果選素食，優先權重拉高素食特有任務
             if (userChoices.dietVeg === "veg" && item.tags.includes("veg")) score += 8;
 
             return { text: item.text, tags: item.tags, score: score };
         });
 
-        // 3. 排序並取出前 6 名最符合偏好且不重複的任務
         scoredItems.sort((a, b) => b.score - a.score);
         return scoredItems.slice(0, 6);
     }
@@ -602,13 +597,11 @@
             green: '自由探索'
         };
 
-        // 依據玩家選擇各自計算四個池子的權重排序
         let finalMagenta = getFilteredAndScoredPool('magenta');
         let finalYellow = getFilteredAndScoredPool('yellow');
         let finalCyan = getFilteredAndScoredPool('cyan');
         let finalGreen = getFilteredAndScoredPool('green');
 
-        // 平衡建立 24 格任務組合
         let typeDistribution = [];
         for(let i=0; i<6; i++) {
             typeDistribution.push('magenta', 'yellow', 'cyan', 'green');
@@ -631,7 +624,6 @@
             });
         }
 
-        // 渲染 5x5 網格
         for (let i = 0; i < 25; i++) {
             const cell = document.createElement("div");
             
@@ -659,7 +651,7 @@
     }
 
     function restartGame() {
-        userChoices = {}; // 重置選擇
+        userChoices = {}; 
         renderNode("Start");
     }
 
