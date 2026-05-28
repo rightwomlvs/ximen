@@ -3,304 +3,682 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>西門町副本生成器</title>
+    <title>西門奇談書 - 智能聯動版</title>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
-        /* 基礎設定與西門町霓虹街頭風格 */
         * { box-sizing: border-box; }
-        body { 
-            font-family: 'Microsoft JhengHei', sans-serif; 
-            background-color: #121212; 
-            color: #ffffff; 
-            margin: 0; 
-            padding: 0; 
-            display: flex; 
-            justify-content: center; 
-            min-height: 100vh; 
-        }
-        #app { 
-            width: 100%; 
-            max-width: 480px; 
-            background: #1e1e1e; 
-            height: 100vh; 
-            display: flex; 
-            flex-direction: column; 
-            box-shadow: 0 0 20px rgba(0,255,255,0.1); 
-        }
-        .header { 
-            background: #000; 
-            padding: 15px; 
-            text-align: center; 
-            border-bottom: 2px solid #0ff; 
-            font-weight: bold; 
-            letter-spacing: 2px; 
-            color: #0ff; 
-            text-shadow: 0 0 8px rgba(0,255,255,0.8); 
-        }
-        
-        /* 聊天室介面 */
-        #chat-view {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        .chat-container { 
-            flex: 1; 
-            padding: 15px; 
-            overflow-y: auto; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 15px; 
-        }
-        .message { 
-            max-width: 80%; 
-            padding: 12px 16px; 
-            border-radius: 15px; 
-            font-size: 14.5px; 
-            line-height: 1.5; 
-            animation: fadeIn 0.3s ease;
-        }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .bot { 
-            background: #2a2a2a; 
-            color: #eee; 
-            align-self: flex-start; 
-            border-bottom-left-radius: 0; 
-            border-left: 3px solid #f0f; 
-        }
-        .user { 
-            background: #0ff; 
-            color: #000; 
-            align-self: flex-end; 
-            border-bottom-right-radius: 0; 
-            font-weight: bold;
-        }
-        .input-area { 
-            display: flex; 
-            padding: 15px; 
-            background: #000; 
-            border-top: 1px solid #333; 
-        }
-        .input-area input { 
-            flex: 1; 
-            padding: 12px; 
-            border: none; 
-            border-radius: 20px; 
-            background: #222; 
-            color: #fff; 
-            outline: none; 
-        }
-        .input-area button { 
-            margin-left: 10px; 
-            padding: 10px 20px; 
-            background: #f0f; 
-            color: #fff; 
-            border: none; 
-            border-radius: 20px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            box-shadow: 0 0 10px rgba(255,0,255,0.5); 
+        :root {
+            --bg-dark: #121212;
+            --container-bg: #1e1e1e;
+            --neon-cyan: #00e5ff;
+            --neon-magenta: #ff00ff;
+            --neon-green: #39ff14;
+            --neon-yellow: #ffff00;
+            --text-main: #e0e0e0;
+            --text-muted: #bbb;
         }
 
-        /* 賓果卡介面 */
+        body { 
+            font-family: 'Microsoft JhengHei', 'Segoe UI', Tahoma, sans-serif; 
+            background-color: var(--bg-dark); 
+            color: var(--text-main); 
+            margin: 0; 
+            padding: clamp(10px, 2vw, 20px);
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #game-container { 
+            width: 100%; 
+            max-width: 900px; 
+            background: var(--container-bg); 
+            min-height: 600px; 
+            display: flex; 
+            flex-direction: column; 
+            border: 1px solid #333;
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.1); 
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header { 
+            background: #0a0a0a; 
+            padding: 20px; 
+            text-align: center; 
+            border-bottom: 2px solid var(--neon-cyan); 
+            font-weight: bold; 
+            font-size: 1.5rem;
+            letter-spacing: 2px; 
+            color: var(--neon-cyan); 
+            text-shadow: 0 0 10px rgba(0, 229, 255, 0.5); 
+        }
+
+        /* 對話區 */
+        #dialog-view {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .story-area {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: radial-gradient(circle at center, #2a2a2a 0%, #1e1e1e 100%);
+        }
+
+        .story-en {
+            font-size: 1.3rem;
+            color: var(--neon-cyan);
+            margin-bottom: 15px;
+            font-weight: bold;
+            line-height: 1.5;
+            text-shadow: 0 0 5px rgba(0, 255, 255, 0.2);
+        }
+
+        .story-zh {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            max-width: 650px;
+        }
+
+        .options-area {
+            padding: 30px;
+            background: #111;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            border-top: 1px solid #333;
+        }
+
+        .btn-option {
+            background: transparent;
+            color: var(--neon-magenta);
+            border: 2px solid var(--neon-magenta);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            box-shadow: 0 0 8px rgba(255, 0, 255, 0.15);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            min-height: 60px;
+        }
+
+        .btn-option:hover {
+            background: var(--neon-magenta);
+            color: #000;
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.7);
+            transform: translateY(-2px);
+        }
+
+        /* 副本區 */
         #bingo-view {
             display: none;
-            padding: 15px;
+            flex-direction: column;
             flex: 1;
-            overflow-y: auto;
+            background: #181818;
+            padding: 20px;
+            align-items: center;
+        }
+
+        #export-area {
+            background: #181818;
+            padding: 15px;
+            border-radius: 12px;
+            width: 100%;
+            display: flex;
             flex-direction: column;
             align-items: center;
         }
-        .grid { 
-            display: grid; 
-            grid-template-columns: repeat(5, 1fr); 
-            gap: 6px; 
-            width: 100%;
-            margin-top: 10px; 
-        }
-        .cell { 
-            background: #2a2a2a; 
-            border: 1px solid #444; 
-            border-radius: 8px; 
-            padding: 6px; 
-            text-align: center; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            align-items: center; 
-            aspect-ratio: 1 / 1;
-            cursor: pointer; 
-            transition: all 0.2s; 
-            position: relative;
-        }
-        .cell:active { transform: scale(0.95); }
-        .cell span.type { font-size: 10px; opacity: 0.8; margin-bottom: 4px; display: block; }
-        .cell span.task { font-size: 11px; font-weight: bold; line-height: 1.2; word-break: break-word; }
-        
-        /* 屬性顏色設定 */
-        .type-location { border-top: 3px solid #0ff; color: #0ff; }
-        .type-random { border-top: 3px solid #f0f; color: #f0f; }
-        .type-recommend { border-top: 3px solid #ff0; color: #ff0; }
-        .type-explore { border-top: 3px solid #0f0; color: #0f0; }
-        
-        .cell.center { border: 2px solid #fff; background: #333; color: #fff;}
-        .cell.completed { background: rgba(0, 255, 255, 0.2); border-color: #0ff; }
-        .cell.completed::after {
-            content: '✔';
-            position: absolute;
-            font-size: 30px;
-            color: rgba(0, 255, 255, 0.6);
-            z-index: 0;
-        }
-        .cell span { position: relative; z-index: 1; }
 
-        .btn-restart {
-            margin-top: 20px;
-            padding: 12px 24px;
-            background: transparent;
-            color: #0ff;
-            border: 1px solid #0ff;
-            border-radius: 20px;
-            cursor: pointer;
+        .bingo-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .bingo-title {
+            font-size: 1.5rem;
             font-weight: bold;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .bingo-subtitle {
+            font-size: 1rem;
+            color: #888;
+        }
+
+        .bingo-grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 10px;
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 20px;
+        }
+
+        .bingo-cell {
+            background: rgba(30, 30, 30, 0.8);
+            border: 1px solid #444;
+            border-radius: 8px;
+            aspect-ratio: 1 / 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        .bingo-cell:hover {
+            transform: scale(1.05);
+            background: rgba(50, 50, 50, 0.9);
+            z-index: 2;
+        }
+
+        .bingo-cell.stamped {
+            opacity: 0.3;
+            filter: grayscale(100%);
+            transform: scale(0.95);
+        }
+
+        .cell-type {
+            font-size: clamp(0.6rem, 1.2vw, 0.75rem);
+            margin-bottom: 4px;
+        }
+
+        .cell-desc {
+            font-size: clamp(0.65rem, 1.3vw, 0.85rem);
+            font-weight: bold;
+            color: #fff;
+            word-break: break-all;
+            line-height: 1.3;
+        }
+
+        .theme-magenta { border-top: 3px solid var(--neon-magenta); }
+        .theme-magenta .cell-type { color: var(--neon-magenta); }
+        
+        .theme-yellow { border-top: 3px solid var(--neon-yellow); }
+        .theme-yellow .cell-type { color: var(--neon-yellow); }
+        
+        .theme-cyan { border-top: 3px solid var(--neon-cyan); }
+        .theme-cyan .cell-type { color: var(--neon-cyan); }
+        
+        .theme-green { border-top: 3px solid var(--neon-green); }
+        .theme-green .cell-type { color: var(--neon-green); }
+
+        .theme-white { 
+            border: 2px solid #fff; 
+            background: #2a2a2a; 
+        }
+        .theme-white .cell-type, .theme-white .cell-desc { color: #fff; }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .btn-regenerate, .btn-save {
+            background: transparent;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-regenerate {
+            color: var(--neon-cyan);
+            border: 2px solid var(--neon-cyan);
+        }
+
+        .btn-regenerate:hover {
+            background: var(--neon-cyan);
+            color: #000;
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.7);
+        }
+
+        .btn-save {
+            color: var(--neon-magenta);
+            border: 2px solid var(--neon-magenta);
+        }
+
+        .btn-save:hover {
+            background: var(--neon-magenta);
+            color: #000;
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.7);
+        }
+
+        @media (max-width: 768px) {
+            .options-area { grid-template-columns: 1fr; }
+            .bingo-grid { gap: 6px; }
+            .btn-regenerate, .btn-save { width: 100%; }
         }
     </style>
 </head>
 <body>
 
-<div id="app">
-    <div class="header">新西門歷城 🚀 副本系統</div>
+<div id="game-container">
+    <div class="header">📖 西門奇談書</div>
     
-    <div id="chat-view">
-        <div class="chat-container" id="chat-box">
-            </div>
-        <div class="input-area">
-            <input type="text" id="user-input" placeholder="輸入你的回答..." autocomplete="off">
-            <button onclick="sendMessage()">送出</button>
+    <div id="dialog-view">
+        <div class="story-area">
+            <div class="story-en" id="text-en">Loading...</div>
+            <div class="story-zh" id="text-zh">載入中...</div>
         </div>
+        <div class="options-area" id="options-container"></div>
     </div>
 
     <div id="bingo-view">
-        <h3 style="color: #fff; margin: 0 0 10px 0; text-align: center;">你的專屬 5x5 任務卡</h3>
-        <p style="font-size: 12px; color: #aaa; text-align: center; margin-bottom: 15px;">點擊任務格即可模擬「蓋章驗證」</p>
-        <div class="grid" id="bingo-grid">
+        <div id="export-area">
+            <div class="bingo-header">
+                <div class="bingo-title">你的專屬 5x5 任務卡</div>
+                <div class="bingo-subtitle">點擊任務格即可模擬「蓋章驗證」</div>
             </div>
-        <button class="btn-restart" onclick="location.reload()">重新生成新副本</button>
+            <div class="bingo-grid" id="bingo-grid"></div>
+        </div>
+        
+        <div class="action-buttons">
+            <button class="btn-regenerate" onclick="restartGame()">重新生成新奇談</button>
+            <button class="btn-save" onclick="saveImage()">儲存任務卡</button>
+        </div>
     </div>
 </div>
 
 <script>
-    // 預設的 AI 情報商對話腳本
-    const botScript = [
-        "你好！我是西門町情報商。今天是獨行俠單刷副本，還是帶了夥伴？你們有多少時間可以在這座迷宮裡闖蕩？",
-        "要在這街頭生存，得先摸摸口袋。你們今天的探險預算是多少？",
-        "最後，你們想在這個時代『看見』什麼？是歷史建築留下的舊時光、街頭塗鴉的狂放叛逆，還是隱藏巷弄的獨立創作者？",
-        "情報收集完畢！正在根據你們的條件，為你們生成專屬的西門町 5x5 探索副本..."
-    ];
-    let step = 0;
-    const chatBox = document.getElementById('chat-box');
-    const userInput = document.getElementById('user-input');
+    // 全域變數用於儲存玩家的選擇，達成真聯動
+    let userChoices = {};
 
-    // 初始化第一句話
-    window.onload = () => {
-        appendMessage('bot', botScript[step]);
-        userInput.addEventListener("keypress", function(event) {
-            if (event.key === "Enter") sendMessage();
-        });
+    // 任務情報庫（全面掛載屬性標籤）
+    const taskPools = {
+        magenta: [ 
+            { text: "在六號出口彩虹斑馬線拍跳躍照", tags: ["outdoor"] },
+            { text: "聽一首街頭藝人的演唱並打賞", tags: ["outdoor", "subculture"] },
+            { text: "用台語或外語向在地店員點餐", tags: [] },
+            { text: "與穿著Cosplay服裝的玩家合影", tags: ["subculture"] },
+            { text: "跟西門町地標自拍合影", tags: ["history"] },
+            { text: "找人幫你拍一張復古底片風格照", tags: ["history"] },
+            { text: "挑戰夾娃娃機直到獲得戰利品", tags: ["indoor", "subculture"] },
+            { text: "去萬年湯姆熊打一局太鼓達人", tags: ["indoor", "subculture"] },
+            { text: "在拍貼機留下這次任務的實體紀錄", tags: ["indoor", "subculture"] },
+            { text: "尋找外國旅客並推薦一個景點", tags: [] },
+            { text: "在電影街大聲朗讀中二的電影標語", tags: ["subculture", "outdoor"] },
+            { text: "模仿服飾店櫥窗假人的動作拍照", tags: ["subculture"] },
+            { text: "挑戰吃一樣從未吃過的路邊小吃", tags: ["food", "snacks"] },
+            { text: "用 100 元內買到一個奇葩紀念品", tags: ["subculture"] },
+            { text: "在街頭找人合照並比出專屬手勢", tags: ["subculture"] }
+        ],
+        yellow: [ 
+            { text: "朝聖老天祿滷味", tags: ["food", "snacks", "meat-only"] },
+            { text: "天天利美食坊吃半熟蛋滷肉飯", tags: ["food", "snacks", "meat-only"] },
+            { text: "品嚐成都楊桃冰(新址)或蜂大咖啡", tags: ["food", "snacks", "veg", "cafe"] },
+            { text: "萬年大樓地下美食街尋寶", tags: ["food", "indoor"] },
+            { text: "阿宗麵線站著吃挑戰", tags: ["food", "snacks", "meat-only", "outdoor"] },
+            { text: "金獅大酒樓體驗推車港點", tags: ["food", "indoor", "restaurant", "meat-only"] },
+            { text: "雪王冰淇淋挑戰獵奇口味", tags: ["food", "indoor", "veg", "snacks"] },
+            { text: "建宏/富宏牛肉麵補充體力", tags: ["food", "meat-only", "restaurant"] },
+            { text: "玉林雞腿大王或豪大大雞排", tags: ["food", "meat-only", "snacks"] },
+            { text: "雜誌瘋尋找特定外文情報", tags: ["subculture", "indoor"] },
+            { text: "探索某間隱藏在二樓的獨立古著店", tags: ["subculture", "indoor"] },
+            { text: "挖寶特色玩具公仔店（如萬年大樓）", tags: ["subculture", "indoor"] },
+            { text: "尋找在地隱藏版無名小吃", tags: ["food", "snacks"] },
+            { text: "光顧一間超過30年歷史的老店", tags: ["history"] },
+            { text: "買一杯特色手搖飲並拍下霓虹招牌", tags: ["food", "snacks", "veg"] },
+            // 蔬食/素食專屬強化任務
+            { text: "尋找西門町純素餐廳品嚐在地料理", tags: ["food", "veg", "restaurant"] },
+            { text: "去觀音齋素食享用台式素自助餐", tags: ["food", "veg", "restaurant"] },
+            { text: "在街頭尋找烤麻糬或地瓜球等全素小吃", tags: ["food", "veg", "snacks"] },
+            { text: "造訪蔬食咖啡廳享受無肉下午茶", tags: ["food", "veg", "cafe", "indoor"] }
+        ],
+        cyan: [ 
+            { text: "西門紅樓八角樓", tags: ["history", "indoor"] },
+            { text: "西本願寺廣場(鐘樓/樹心會館)", tags: ["history", "outdoor"] },
+            { text: "臺北市電影主題公園", tags: ["subculture", "outdoor"] },
+            { text: "美國街 (昆明街96巷)", tags: ["subculture", "outdoor"] },
+            { text: "萬年商業大樓", tags: ["subculture", "indoor", "history"] },
+            { text: "台北天后宮 (隱匿於成都路)", tags: ["history", "indoor"] },
+            { text: "刺青街 (漢中街50巷)", tags: ["subculture", "outdoor"] },
+            { text: "獅子林新光商業大樓", tags: ["history", "indoor"] },
+            { text: "武昌街電影街", tags: ["subculture", "outdoor"] },
+            { text: "中山堂廣場", tags: ["history", "outdoor"] },
+            { text: "西門捷運站六號出口起跑線", tags: ["outdoor"] },
+            { text: "西門塗鴉牆特區", tags: ["subculture", "outdoor"] },
+            { text: "唐吉訶德西門店", tags: ["subculture", "indoor"] },
+            { text: "西門町遊客中心", tags: ["indoor"] },
+            { text: "六福大樓與周邊暗巷", tags: ["history", "outdoor"] }
+        ],
+        green: [ 
+            { text: "找尋三面不同風格的街頭塗鴉", tags: ["subculture", "outdoor"] },
+            { text: "在巷弄內發現一間隱藏版咖啡廳", tags: ["food", "cafe", "indoor"] },
+            { text: "尋找日治時期遺留的建築痕跡", tags: ["history", "outdoor"] },
+            { text: "收集五種不同店家的品牌視覺", tags: [] },
+            { text: "找出三塊有動物圖案的霓虹招牌", tags: ["subculture"] },
+            { text: "觀察並記錄三種不同次文化穿搭", tags: ["subculture"] },
+            { text: "在電影街找一張最符合心境的海報", tags: ["subculture", "outdoor"] },
+            { text: "尋找西門町裡的「老台北」元素", tags: ["history"] },
+            { text: "找尋一間販售黑膠唱片或卡帶的店", tags: ["history", "indoor"] },
+            { text: "在徒步區找一個最佳觀察路人的制高點", tags: ["outdoor"] },
+            { text: "跟隨一隻街貓或流浪狗的腳步三分鐘", tags: ["outdoor"] },
+            { text: "尋找巷弄內不為人知的數字塗鴉", tags: ["subculture", "outdoor"] },
+            { text: "發現三個不同語言的街頭標語", tags: [] },
+            { text: "尋找一處可以拍出賽步龐克感的霓虹巷", tags: ["subculture", "outdoor"] },
+            { text: "找出西門町舊址/舊城門的歷史標記", tags: ["history", "outdoor"] }
+        ]
     };
 
-    function appendMessage(sender, text) {
-        const msgDiv = document.createElement('div');
-        msgDiv.className = `message ${sender}`;
-        msgDiv.innerText = text;
-        chatBox.appendChild(msgDiv);
-        chatBox.scrollTop = chatBox.scrollHeight;
+    // 決策流地圖：納入全新飲食三階段調查
+    const storyData = {
+        "Start": {
+            en: "Welcome to Ximending! How are you exploring this maze today?",
+            zh: "翻開奇談書。歡迎來到西門町，今天你打算如何探索這座都市迷宮？",
+            options: [
+                { text: "Solo 孤狼單刷", target: "Pace" },
+                { text: "Group 公會組隊", target: "Pace" },
+                { text: "Date 雙人約會", target: "Pace" }
+            ]
+        },
+        "Pace": {
+            en: "Target confirmed. How much time do you have to complete this mission?",
+            zh: "人數確認。那麼，你們這次的探險有多少時間可以揮霍？",
+            options: [
+                { text: "1 Hour 快速突擊", target: "Budget" },
+                { text: "3 Hours 深度潛入", target: "Budget" },
+                { text: "Full Day 無限探索", target: "Budget" }
+            ]
+        },
+        "Budget": {
+            en: "Resources check. How much Gold do you plan to spend today?",
+            zh: "盤點裝備。進入西門町，你們今天的金幣預算落在哪個區間？",
+            options: [
+                { text: "Low 銅板生存", target: "Stamina", data: "low" },
+                { text: "Mid 正常發揮", target: "Stamina", data: "mid" },
+                { text: "High 財富自由", target: "Stamina", data: "high" }
+            ],
+            key: "budget"
+        },
+        "Stamina": {
+            en: "Evaluating physical specs. What is your current combat/stamina level?",
+            zh: "評估機體狀態。說實話，你目前的體力與腳力等級落在哪個階段？",
+            options: [
+                { text: "Weak 戰五渣", target: "Transport" },
+                { text: "Normal 尋常冒險者", target: "Transport" },
+                { text: "Strong 鐵人行軍", target: "Transport" }
+            ]
+        },
+        "Transport": {
+            en: "Pathfinding protocol. What is your preferred method of moving through the city?",
+            zh: "載入尋路協定。在這個錯綜複雜的街區，你偏好哪一種移動方式？",
+            options: [
+                { text: "Walk 步兵巡視", target: "Heat" },
+                { text: "Bike 騎兵(YouBike)", target: "Heat" },
+                { text: "Mixed 隨機應變", target: "Heat" }
+            ]
+        },
+        "Heat": {
+            en: "Weather hazard warning. How well can your system handle the heat?",
+            zh: "環境氣候警告。對於高溫與日曬，你的耐熱程度如何？",
+            options: [
+                { text: "Low 吹冷氣續命", target: "DietType", data: "low" },
+                { text: "Mid 隨遇而安", target: "DietType", data: "mid" },
+                { text: "High 太陽之子", target: "DietType", data: "high" }
+            ],
+            key: "heat"
+        },
+        // 新增 1：飲食類別偏好調查
+        "DietType": {
+            en: "Dietary style protocol. What kind of food container interests you?",
+            zh: "飲食偏好調查。巡禮西門町時，你更傾向哪一種用餐或歇腳的形式？",
+            options: [
+                { text: "Snacks 街頭街邊小吃", target: "DietVeg", data: "snacks" },
+                { text: "Cafe 文青下午茶咖啡廳", target: "DietVeg", data: "cafe" },
+                { text: "Restaurant 正餐餐廳與酒吧", target: "DietVeg", data: "restaurant" }
+            ],
+            key: "dietType"
+        },
+        // 新增 2：葷素調查
+        "DietVeg": {
+            en: "Dietary lifestyle filter. Any specific vegetarian requests?",
+            zh: "飲食型態過濾。請問你的公會或個人是否有特定的素食習慣？",
+            options: [
+                { text: "Meat 葷食無忌 (含肉類海鮮)", target: "Theme", data: "meat" },
+                { text: "Veg 蔬食 / 素食主義", target: "VegType", data: "veg" }
+            ],
+            key: "dietVeg"
+        },
+        // 新增 3：素食類別細分
+        "VegType": {
+            en: "Vegetarian specification sub-classification.",
+            zh: "素食類別細分。為了精準對應隱藏版情報，請問具體的素食規範是？",
+            options: [
+                { text: "Vegan 全素 / 純素", target: "Theme", data: "vegan" },
+                { text: "LactoOvo 蛋奶素", target: "Theme", data: "lacto-ovo" },
+                { text: "Flexi 五辛素 / 方便素", target: "Theme", data: "flexi" }
+            ],
+            key: "vegType"
+        },
+        "Theme": {
+            en: "Parameters set. Finally, what kind of vibe are you hunting for in the streets?",
+            zh: "參數全數鎖定。最後，你最想在街頭尋找哪種氣息的都市傳說？",
+            options: [
+                { text: "History 歷史與遺跡", target: "End_Card", data: "History" },
+                { text: "Subculture 次文化與潮流", target: "End_Card", data: "Subculture" },
+                { text: "Food 隱藏版美食", target: "End_Card", data: "Food" }
+            ],
+            key: "theme"
+        }
+    };
+
+    const dialogView = document.getElementById('dialog-view');
+    const bingoView = document.getElementById('bingo-view');
+
+    function shuffleArray(array) {
+        let curId = array.length;
+        while (0 !== curId) {
+            let randId = Math.floor(Math.random() * curId);
+            curId -= 1;
+            let tmp = array[curId];
+            array[curId] = array[randId];
+            array[randId] = tmp;
+        }
+        return array;
     }
 
-    function sendMessage() {
-        const text = userInput.value.trim();
-        if (!text) return;
-        
-        appendMessage('user', text);
-        userInput.value = '';
-        step++;
+    function renderNode(nodeId) {
+        if (nodeId === "End_Card") {
+            generateBingoCard();
+            return;
+        }
 
-        if (step < botScript.length) {
-            // 模擬 AI 思考時間
-            setTimeout(() => {
-                appendMessage('bot', botScript[step]);
-                if (step === botScript.length - 1) {
-                    // 結束對話，切換到賓果卡
-                    setTimeout(generateBingo, 2000);
+        const node = storyData[nodeId];
+        if (!node) return;
+
+        dialogView.style.display = 'flex';
+        bingoView.style.display = 'none';
+
+        const enEl = document.getElementById("text-en");
+        const zhEl = document.getElementById("text-zh");
+        
+        enEl.style.opacity = '0';
+        zhEl.style.opacity = '0';
+        
+        setTimeout(() => {
+            enEl.innerText = node.en;
+            zhEl.innerText = node.zh;
+            enEl.style.transition = 'opacity 0.4s ease';
+            zhEl.style.transition = 'opacity 0.4s ease';
+            enEl.style.opacity = '1';
+            zhEl.style.opacity = '1';
+        }, 150);
+
+        const optionsContainer = document.getElementById("options-container");
+        optionsContainer.innerHTML = "";
+
+        node.options.forEach(opt => {
+            const btn = document.createElement("button");
+            btn.className = "btn-option";
+            btn.innerText = opt.text;
+            btn.onclick = () => {
+                // 如果該節點有定義儲存變數的Key，紀錄玩家的選擇
+                if (node.key && opt.data) {
+                    userChoices[node.key] = opt.data;
                 }
-            }, 800);
-        }
+                renderNode(opt.target);
+            };
+            optionsContainer.appendChild(btn);
+        });
     }
 
-    // 生成西門町賓果卡
-    function generateBingo() {
-        document.getElementById('chat-view').style.display = 'none';
-        document.getElementById('bingo-view').style.display = 'flex';
-        
-        const grid = document.getElementById('bingo-grid');
-        
-        // 模擬 AI 生成的 24 個西門町任務 (扣除正中央)
-        const tasks = [
-            { type: 'type-location', label: '指定地點', task: '武昌電影街' },
-            { type: 'type-random', label: '抽籤任務', task: '模仿海報主角拍照' },
-            { type: 'type-recommend', label: '在地推薦', task: '蜂大咖啡買核桃酥' },
-            { type: 'type-explore', label: '自由探索', task: '找尋巷弄數字塗鴉' },
-            { type: 'type-location', label: '指定地點', task: '美國街(昆明街96巷)' },
-            { type: 'type-explore', label: '自由探索', task: '找尋街頭藝人表演' },
-            { type: 'type-random', label: '抽籤任務', task: '與陌生人交換名片' },
-            { type: 'type-location', label: '指定地點', task: '西門紅樓八角樓' },
-            { type: 'type-recommend', label: '在地推薦', task: '萬年大樓老鐘錶行' },
-            { type: 'type-explore', label: '自由探索', task: '找尋日治時期遺跡' },
-            { type: 'type-random', label: '抽籤任務', task: '喝一杯苦茶或楊桃冰' },
-            { type: 'type-location', label: '指定地點', task: '西本願寺鐘樓' },
-            { type: 'type-recommend', label: '在地推薦', task: '老牌黃燉肉飯' },
-            { type: 'type-explore', label: '自由探索', task: '花50元內夾娃娃' },
-            { type: 'type-random', label: '抽籤任務', task: '大聲朗讀電影標語' },
-            { type: 'type-location', label: '指定地點', task: '臺北市電影主題公園' },
-            { type: 'type-recommend', label: '在地推薦', task: '特色古著店試穿' },
-            { type: 'type-explore', label: '自由探索', task: '尋找有動物的招牌' },
-            { type: 'type-random', label: '抽籤任務', task: '拍一張滑板磨痕照' },
-            { type: 'type-location', label: '指定地點', task: '西門捷運站六號出口' },
-            { type: 'type-recommend', label: '在地推薦', task: '某間二樓的獨立書店' },
-            { type: 'type-explore', label: '自由探索', task: '找尋西門舊址標記' },
-            { type: 'type-random', label: '抽籤任務', task: '觀察路人並記錄穿搭' },
-            { type: 'type-location', label: '指定地點', task: '西門誠品(前今日百貨)' }
-        ];
+    // 關鍵升級：權重動態算分與絕對去重生成演算法
+    function getFilteredAndScoredPool(poolId) {
+        let items = [...taskPools[poolId]];
 
-        // 將陣列隨機打亂 (Fisher-Yates Shuffle)
-        for (let i = tasks.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [tasks[i], tasks[j]] = [tasks[j], tasks[i]];
+        // 1. 嚴格素食過濾機制
+        if (userChoices.dietVeg === "veg") {
+            // 如果玩家選素食，100% 排除帶有 'meat-only' 標籤的任務
+            items = items.filter(item => !item.tags.includes("meat-only"));
         }
 
-        // 渲染 25 格
-        let taskIndex = 0;
-        for (let i = 0; i < 25; i++) {
-            const cell = document.createElement('div');
+        // 2. 聯動算分機制
+        let scoredItems = items.map(item => {
+            let score = Math.random() * 0.3; // 加入極小隨機亂數，避免同分時排序死板
+
+            // 根據玩家選擇的主題權重加分 (+5)
+            if (userChoices.theme === "History" && item.tags.includes("history")) score += 5;
+            if (userChoices.theme === "Subculture" && item.tags.includes("subculture")) score += 5;
+            if (userChoices.theme === "Food" && item.tags.includes("food")) score += 5;
+
+            // 根據耐熱度加分
+            if (userChoices.heat === "low" && item.tags.includes("indoor")) score += 3;
+            if (userChoices.heat === "high" && item.tags.includes("outdoor")) score += 2;
+
+            // 根據飲食類別偏好加分
+            if (userChoices.dietType && item.tags.includes(userChoices.dietType)) score += 4;
+
+            // 如果選素食，優先權重拉高素食特有任務
+            if (userChoices.dietVeg === "veg" && item.tags.includes("veg")) score += 8;
+
+            return { text: item.text, tags: item.tags, score: score };
+        });
+
+        // 3. 排序並取出前 6 名最符合偏好且不重複的任務
+        scoredItems.sort((a, b) => b.score - a.score);
+        return scoredItems.slice(0, 6);
+    }
+
+    function generateBingoCard() {
+        dialogView.style.display = 'none';
+        bingoView.style.display = 'flex';
+
+        const grid = document.getElementById("bingo-grid");
+        grid.innerHTML = "";
+
+        const typeLabels = {
+            magenta: '抽籤任務',
+            yellow: '在地推薦',
+            cyan: '指定地點',
+            green: '自由探索'
+        };
+
+        // 依據玩家選擇各自計算四個池子的權重排序
+        let finalMagenta = getFilteredAndScoredPool('magenta');
+        let finalYellow = getFilteredAndScoredPool('yellow');
+        let finalCyan = getFilteredAndScoredPool('cyan');
+        let finalGreen = getFilteredAndScoredPool('green');
+
+        // 平衡建立 24 格任務組合
+        let typeDistribution = [];
+        for(let i=0; i<6; i++) {
+            typeDistribution.push('magenta', 'yellow', 'cyan', 'green');
+        }
+        typeDistribution = shuffleArray(typeDistribution);
+
+        let selectedTasks = [];
+        for (let i = 0; i < 24; i++) {
+            let targetType = typeDistribution[i];
+            let taskObj;
+            if (targetType === 'magenta') taskObj = finalMagenta.pop();
+            if (targetType === 'yellow') taskObj = finalYellow.pop();
+            if (targetType === 'cyan') taskObj = finalCyan.pop();
+            if (targetType === 'green') taskObj = finalGreen.pop();
             
-            // 正中央設定為起終點
+            selectedTasks.push({ 
+                type: targetType, 
+                label: typeLabels[targetType], 
+                text: taskObj.text 
+            });
+        }
+
+        // 渲染 5x5 網格
+        for (let i = 0; i < 25; i++) {
+            const cell = document.createElement("div");
+            
             if (i === 12) {
-                cell.className = 'cell center';
-                cell.innerHTML = '<span class="type">起點/終點</span><span class="task">CollaPlay<br>(武昌街老宅)</span>';
+                cell.className = "bingo-cell theme-white";
+                cell.innerHTML = `
+                    <div class="cell-type">起點/終點</div>
+                    <div class="cell-desc">台北漫步旅店<br>MEANDER Taipei</div>
+                `;
             } else {
-                const item = tasks[taskIndex++];
-                cell.className = `cell ${item.type}`;
-                cell.innerHTML = `<span class="type">${item.label}</span><span class="task">${item.task}</span>`;
-                
-                // 點擊模擬蓋章效果
-                cell.onclick = function() {
-                    this.classList.toggle('completed');
-                };
+                let task = selectedTasks.pop();
+                cell.className = `bingo-cell theme-${task.type}`;
+                cell.innerHTML = `
+                    <div class="cell-type">${task.label}</div>
+                    <div class="cell-desc">${task.text}</div>
+                `;
             }
+
+            cell.onclick = function() {
+                this.classList.toggle("stamped");
+            };
+
             grid.appendChild(cell);
         }
     }
+
+    function restartGame() {
+        userChoices = {}; // 重置選擇
+        renderNode("Start");
+    }
+
+    function saveImage() {
+        const element = document.getElementById('export-area');
+        html2canvas(element, {
+            backgroundColor: '#181818', 
+            scale: 2 
+        }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = 'Ximending_QuestCard.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        });
+    }
+
+    window.onload = () => {
+        renderNode("Start");
+    };
 </script>
 </body>
 </html>
