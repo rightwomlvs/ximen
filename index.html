@@ -5,107 +5,146 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>西門町 AI 情報商對話系統</title>
     <style>
-        /* 賽博龐克與西門町街頭風格設定 */
+        /* 基礎重置與變數設定 */
         * { box-sizing: border-box; }
+        :root {
+            --bg-dark: #0d0d0d;
+            --container-bg: #1a1a1a;
+            --neon-cyan: #0ff;
+            --neon-magenta: #f0f;
+            --neon-green: #0f0;
+            --text-main: #e0e0e0;
+            --text-muted: #bbb;
+        }
+
         body { 
-            font-family: 'Microsoft JhengHei', sans-serif; 
-            background-color: #0d0d0d; 
-            color: #e0e0e0; 
+            font-family: 'Microsoft JhengHei', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg-dark); 
+            color: var(--text-main); 
             margin: 0; 
-            padding: 0; 
+            padding: clamp(10px, 3vw, 20px); /* 外距隨螢幕微調 */
             display: flex; 
             justify-content: center; 
             align-items: center;
-            min-height: 100vh; 
+            min-height: 100vh;
+            min-height: 100dvh; /* 解決行動裝置瀏覽器上下選單問題 */
         }
+
         #game-container { 
             width: 100%; 
-            max-width: 500px; 
-            background: #1a1a1a; 
-            min-height: 80vh; 
+            max-width: 800px; /* 放寬筆電版的最大寬度 */
+            background: var(--container-bg); 
+            min-height: max(75vh, 500px); 
             display: flex; 
             flex-direction: column; 
             border: 1px solid #333;
-            box-shadow: 0 0 25px rgba(0, 255, 255, 0.15); 
-            border-radius: 10px;
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.12); 
+            border-radius: 12px;
             overflow: hidden;
         }
+
+        /* 標題區塊 */
         .header { 
             background: #000; 
-            padding: 20px; 
+            padding: clamp(15px, 3vw, 25px); 
             text-align: center; 
-            border-bottom: 2px solid #0ff; 
+            border-bottom: 2px solid var(--neon-cyan); 
             font-weight: bold; 
-            font-size: 1.2rem;
+            font-size: clamp(1.2rem, 3vw, 1.6rem); /* 流體字體大小 */
             letter-spacing: 2px; 
-            color: #0ff; 
+            color: var(--neon-cyan); 
             text-shadow: 0 0 10px rgba(0, 255, 255, 0.8); 
         }
+
+        /* 故事文字區塊 */
         .story-area {
             flex: 1;
-            padding: 30px 20px;
+            padding: clamp(25px, 5vw, 50px) clamp(20px, 4vw, 40px);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
-            background: radial-gradient(circle, #2a2a2a 0%, #1a1a1a 100%);
+            background: radial-gradient(circle at center, #2a2a2a 0%, #1a1a1a 100%);
         }
+
         .story-en {
-            font-size: 1.1rem;
-            color: #0ff;
-            margin-bottom: 15px;
+            font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+            color: var(--neon-cyan);
+            margin-bottom: clamp(15px, 3vw, 20px);
             font-weight: bold;
-            line-height: 1.4;
-            text-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+            line-height: 1.5;
+            text-shadow: 0 0 5px rgba(0, 255, 255, 0.2);
         }
+
         .story-zh {
-            font-size: 1rem;
-            color: #bbb;
+            font-size: clamp(1rem, 2vw, 1.15rem);
+            color: var(--text-muted);
             line-height: 1.6;
+            max-width: 600px; /* 避免寬螢幕文字過長難以閱讀 */
         }
+
+        /* 響應式選項按鈕區塊 */
         .options-area {
-            padding: 20px;
+            padding: clamp(20px, 4vw, 30px);
             background: #111;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+            display: grid;
+            /* 手機單欄，平板/筆電空間夠大自動變為雙欄並排 */
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: clamp(12px, 2.5vw, 20px);
             border-top: 1px solid #333;
         }
+
         .btn-option {
             background: transparent;
-            color: #f0f;
-            border: 2px solid #f0f;
-            padding: 15px;
+            color: var(--neon-magenta);
+            border: 2px solid var(--neon-magenta);
+            padding: clamp(15px, 3vw, 20px);
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: clamp(1rem, 2vw, 1.1rem);
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
             text-transform: uppercase;
-            box-shadow: 0 0 8px rgba(255, 0, 255, 0.2);
+            box-shadow: 0 0 8px rgba(255, 0, 255, 0.15);
+            min-height: 56px; /* 確保觸控點擊範圍符合易用性標準 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
         }
+
         .btn-option:hover {
-            background: #f0f;
+            background: var(--neon-magenta);
             color: #000;
-            box-shadow: 0 0 15px rgba(255, 0, 255, 0.8);
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.7);
+            transform: translateY(-2px); /* 懸浮回饋感 */
         }
+
         .btn-restart {
-            border-color: #0f0;
-            color: #0f0;
-            box-shadow: 0 0 8px rgba(0, 255, 0, 0.2);
+            border-color: var(--neon-green);
+            color: var(--neon-green);
+            box-shadow: 0 0 8px rgba(0, 255, 0, 0.15);
+            grid-column: 1 / -1; /* 重新開始按鈕強制跨滿整列 */
+            max-width: 400px;
+            margin: 0 auto;
+            width: 100%;
         }
+
         .btn-restart:hover {
-            background: #0f0;
+            background: var(--neon-green);
             color: #000;
-            box-shadow: 0 0 15px rgba(0, 255, 0, 0.8);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.7);
         }
+
+        /* 狀態列 */
         .status-bar {
             text-align: center;
-            padding: 10px;
-            font-size: 0.8rem;
-            color: #666;
-            background: #000;
+            padding: 12px;
+            font-size: 0.85rem;
+            color: #555;
+            background: #050505;
+            letter-spacing: 1px;
         }
     </style>
 </head>
@@ -122,7 +161,7 @@
     <div class="options-area" id="options-container">
         </div>
     
-    <div class="status-bar">System Active // Ximending Grid Protocol</div>
+    <div class="status-bar">System Active // Ximending RWD Protocol</div>
 </div>
 
 <script>
@@ -219,9 +258,21 @@
         const node = storyData[nodeId];
         if (!node) return;
 
-        // 更新文字
-        document.getElementById("text-en").innerText = node.en;
-        document.getElementById("text-zh").innerText = node.zh;
+        // 更新文字並加入淡入動畫效果
+        const enEl = document.getElementById("text-en");
+        const zhEl = document.getElementById("text-zh");
+        
+        enEl.style.opacity = '0';
+        zhEl.style.opacity = '0';
+        
+        setTimeout(() => {
+            enEl.innerText = node.en;
+            zhEl.innerText = node.zh;
+            enEl.style.transition = 'opacity 0.4s ease';
+            zhEl.style.transition = 'opacity 0.4s ease';
+            enEl.style.opacity = '1';
+            zhEl.style.opacity = '1';
+        }, 150);
 
         // 清空並更新按鈕
         const optionsContainer = document.getElementById("options-container");
