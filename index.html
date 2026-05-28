@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>西門町副本生成器</title>
+    <style>
+        /* 基礎設定與西門町霓虹街頭風格 */
+        * { box-sizing: border-box; }
+        body { 
+            font-family: 'Microsoft JhengHei', sans-serif; 
+            background-color: #121212; 
+            color: #ffffff; 
+            margin: 0; 
+            padding: 0; 
+            display: flex; 
+            justify-content: center; 
+            min-height: 100vh; 
+        }
+        #app { 
+            width: 100%; 
+            max-width: 480px; 
+            background: #1e1e1e; 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            box-shadow: 0 0 20px rgba(0,255,255,0.1); 
+        }
+        .header { 
+            background: #000; 
+            padding: 15px; 
+            text-align: center; 
+            border-bottom: 2px solid #0ff; 
+            font-weight: bold; 
+            letter-spacing: 2px; 
+            color: #0ff; 
+            text-shadow: 0 0 8px rgba(0,255,255,0.8); 
+        }
+        
+        /* 聊天室介面 */
+        #chat-view {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .chat-container { 
+            flex: 1; 
+            padding: 15px; 
+            overflow-y: auto; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+        }
+        .message { 
+            max-width: 80%; 
+            padding: 12px 16px; 
+            border-radius: 15px; 
+            font-size: 14.5px; 
+            line-height: 1.5; 
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .bot { 
+            background: #2a2a2a; 
+            color: #eee; 
+            align-self: flex-start; 
+            border-bottom-left-radius: 0; 
+            border-left: 3px solid #f0f; 
+        }
+        .user { 
+            background: #0ff; 
+            color: #000; 
+            align-self: flex-end; 
+            border-bottom-right-radius: 0; 
+            font-weight: bold;
+        }
+        .input-area { 
+            display: flex; 
+            padding: 15px; 
+            background: #000; 
+            border-top: 1px solid #333; 
+        }
+        .input-area input { 
+            flex: 1; 
+            padding: 12px; 
+            border: none; 
+            border-radius: 20px; 
+            background: #222; 
+            color: #fff; 
+            outline: none; 
+        }
+        .input-area button { 
+            margin-left: 10px; 
+            padding: 10px 20px; 
+            background: #f0f; 
+            color: #fff; 
+            border: none; 
+            border-radius: 20px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            box-shadow: 0 0 10px rgba(255,0,255,0.5); 
+        }
+
+        /* 賓果卡介面 */
+        #bingo-view {
+            display: none;
+            padding: 15px;
+            flex: 1;
+            overflow-y: auto;
+            flex-direction: column;
+            align-items: center;
+        }
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(5, 1fr); 
+            gap: 6px; 
+            width: 100%;
+            margin-top: 10px; 
+        }
+        .cell { 
+            background: #2a2a2a; 
+            border: 1px solid #444; 
+            border-radius: 8px; 
+            padding: 6px; 
+            text-align: center; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            aspect-ratio: 1 / 1;
+            cursor: pointer; 
+            transition: all 0.2s; 
+            position: relative;
+        }
+        .cell:active { transform: scale(0.95); }
+        .cell span.type { font-size: 10px; opacity: 0.8; margin-bottom: 4px; display: block; }
+        .cell span.task { font-size: 11px; font-weight: bold; line-height: 1.2; word-break: break-word; }
+        
+        /* 屬性顏色設定 */
+        .type-location { border-top: 3px solid #0ff; color: #0ff; }
+        .type-random { border-top: 3px solid #f0f; color: #f0f; }
+        .type-recommend { border-top: 3px solid #ff0; color: #ff0; }
+        .type-explore { border-top: 3px solid #0f0; color: #0f0; }
+        
+        .cell.center { border: 2px solid #fff; background: #333; color: #fff;}
+        .cell.completed { background: rgba(0, 255, 255, 0.2); border-color: #0ff; }
+        .cell.completed::after {
+            content: '✔';
+            position: absolute;
+            font-size: 30px;
+            color: rgba(0, 255, 255, 0.6);
+            z-index: 0;
+        }
+        .cell span { position: relative; z-index: 1; }
+
+        .btn-restart {
+            margin-top: 20px;
+            padding: 12px 24px;
+            background: transparent;
+            color: #0ff;
+            border: 1px solid #0ff;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div class="header">新西門歷城 🚀 副本系統</div>
+    
+    <div id="chat-view">
+        <div class="chat-container" id="chat-box">
+            </div>
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="輸入你的回答..." autocomplete="off">
+            <button onclick="sendMessage()">送出</button>
+        </div>
+    </div>
+
+    <div id="bingo-view">
+        <h3 style="color: #fff; margin: 0 0 10px 0; text-align: center;">你的專屬 5x5 任務卡</h3>
+        <p style="font-size: 12px; color: #aaa; text-align: center; margin-bottom: 15px;">點擊任務格即可模擬「蓋章驗證」</p>
+        <div class="grid" id="bingo-grid">
+            </div>
+        <button class="btn-restart" onclick="location.reload()">重新生成新副本</button>
+    </div>
+</div>
+
+<script>
+    // 預設的 AI 情報商對話腳本
+    const botScript = [
+        "你好！我是西門町情報商。今天是獨行俠單刷副本，還是帶了夥伴？你們有多少時間可以在這座迷宮裡闖蕩？",
+        "要在這街頭生存，得先摸摸口袋。你們今天的探險預算是多少？",
+        "最後，你們想在這個時代『看見』什麼？是歷史建築留下的舊時光、街頭塗鴉的狂放叛逆，還是隱藏巷弄的獨立創作者？",
+        "情報收集完畢！正在根據你們的條件，為你們生成專屬的西門町 5x5 探索副本..."
+    ];
+    let step = 0;
+    const chatBox = document.getElementById('chat-box');
+    const userInput = document.getElementById('user-input');
+
+    // 初始化第一句話
+    window.onload = () => {
+        appendMessage('bot', botScript[step]);
+        userInput.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") sendMessage();
+        });
+    };
+
+    function appendMessage(sender, text) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${sender}`;
+        msgDiv.innerText = text;
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function sendMessage() {
+        const text = userInput.value.trim();
+        if (!text) return;
+        
+        appendMessage('user', text);
+        userInput.value = '';
+        step++;
+
+        if (step < botScript.length) {
+            // 模擬 AI 思考時間
+            setTimeout(() => {
+                appendMessage('bot', botScript[step]);
+                if (step === botScript.length - 1) {
+                    // 結束對話，切換到賓果卡
+                    setTimeout(generateBingo, 2000);
+                }
+            }, 800);
+        }
+    }
+
+    // 生成西門町賓果卡
+    function generateBingo() {
+        document.getElementById('chat-view').style.display = 'none';
+        document.getElementById('bingo-view').style.display = 'flex';
+        
+        const grid = document.getElementById('bingo-grid');
+        
+        // 模擬 AI 生成的 24 個西門町任務 (扣除正中央)
+        const tasks = [
+            { type: 'type-location', label: '指定地點', task: '武昌電影街' },
+            { type: 'type-random', label: '抽籤任務', task: '模仿海報主角拍照' },
+            { type: 'type-recommend', label: '在地推薦', task: '蜂大咖啡買核桃酥' },
+            { type: 'type-explore', label: '自由探索', task: '找尋巷弄數字塗鴉' },
+            { type: 'type-location', label: '指定地點', task: '美國街(昆明街96巷)' },
+            { type: 'type-explore', label: '自由探索', task: '找尋街頭藝人表演' },
+            { type: 'type-random', label: '抽籤任務', task: '與陌生人交換名片' },
+            { type: 'type-location', label: '指定地點', task: '西門紅樓八角樓' },
+            { type: 'type-recommend', label: '在地推薦', task: '萬年大樓老鐘錶行' },
+            { type: 'type-explore', label: '自由探索', task: '找尋日治時期遺跡' },
+            { type: 'type-random', label: '抽籤任務', task: '喝一杯苦茶或楊桃冰' },
+            { type: 'type-location', label: '指定地點', task: '西本願寺鐘樓' },
+            { type: 'type-recommend', label: '在地推薦', task: '老牌黃燉肉飯' },
+            { type: 'type-explore', label: '自由探索', task: '花50元內夾娃娃' },
+            { type: 'type-random', label: '抽籤任務', task: '大聲朗讀電影標語' },
+            { type: 'type-location', label: '指定地點', task: '臺北市電影主題公園' },
+            { type: 'type-recommend', label: '在地推薦', task: '特色古著店試穿' },
+            { type: 'type-explore', label: '自由探索', task: '尋找有動物的招牌' },
+            { type: 'type-random', label: '抽籤任務', task: '拍一張滑板磨痕照' },
+            { type: 'type-location', label: '指定地點', task: '西門捷運站六號出口' },
+            { type: 'type-recommend', label: '在地推薦', task: '某間二樓的獨立書店' },
+            { type: 'type-explore', label: '自由探索', task: '找尋西門舊址標記' },
+            { type: 'type-random', label: '抽籤任務', task: '觀察路人並記錄穿搭' },
+            { type: 'type-location', label: '指定地點', task: '西門誠品(前今日百貨)' }
+        ];
+
+        // 將陣列隨機打亂 (Fisher-Yates Shuffle)
+        for (let i = tasks.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [tasks[i], tasks[j]] = [tasks[j], tasks[i]];
+        }
+
+        // 渲染 25 格
+        let taskIndex = 0;
+        for (let i = 0; i < 25; i++) {
+            const cell = document.createElement('div');
+            
+            // 正中央設定為起終點
+            if (i === 12) {
+                cell.className = 'cell center';
+                cell.innerHTML = '<span class="type">起點/終點</span><span class="task">CollaPlay<br>(武昌街老宅)</span>';
+            } else {
+                const item = tasks[taskIndex++];
+                cell.className = `cell ${item.type}`;
+                cell.innerHTML = `<span class="type">${item.label}</span><span class="task">${item.task}</span>`;
+                
+                // 點擊模擬蓋章效果
+                cell.onclick = function() {
+                    this.classList.toggle('completed');
+                };
+            }
+            grid.appendChild(cell);
+        }
+    }
+</script>
+</body>
+</html>
