@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>西門奇談書 - 智能聯動行動優化版</title>
+    <title>西門奇談書 - 掌櫃降臨完整版</title>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
         * { box-sizing: border-box; }
@@ -67,11 +67,28 @@
             flex: 1;
             padding: 40px;
             display: flex;
+            flex-direction: row; /* 桌機版：NPC與文字橫向排列 */
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, #2a2a2a 0%, #1e1e1e 100%);
+        }
+
+        /* NPC 圖片樣式優化 */
+        .npc-img {
+            max-height: 38vh; /* 避免吃掉過多垂直空間 */
+            margin-right: clamp(20px, 4vw, 40px);
+            display: block;
+            object-fit: contain;
+        }
+
+        /* 故事文字外包裝 */
+        .story-text-container {
+            display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
-            background: radial-gradient(circle at center, #2a2a2a 0%, #1e1e1e 100%);
+            max-width: 500px;
         }
 
         .story-en {
@@ -87,10 +104,9 @@
             font-size: 1.1rem;
             color: var(--text-muted);
             line-height: 1.6;
-            max-width: 650px;
         }
 
-        /* 預設桌機版：使用 Flex 橫向平分排列 */
+        /* 預設桌機版選項：橫向併排 */
         .options-area {
             padding: 30px;
             background: #111;
@@ -274,9 +290,19 @@
             box-shadow: 0 0 15px rgba(255, 0, 255, 0.7);
         }
 
-        /* ------------------ RWD 行動裝置優化斷點 ------------------ */
+        /* ------------------ RWD 行動裝置排版優化 ------------------ */
         @media (max-width: 768px) {
-            /* 關鍵修正：切換為垂直單欄堆疊，對應你的紫色手繪線條 */
+            /* 手機直式：對話畫面改為垂直排列，NPC在上，文字在下 */
+            .story-area {
+                flex-direction: column;
+                padding: 20px;
+            }
+            .npc-img {
+                margin-right: 0;
+                margin-bottom: 20px;
+                max-height: 28vh; /* 縮小手機上的NPC高度 */
+            }
+            /* 按鈕改為單欄垂直堆疊 */
             .options-area { 
                 flex-direction: column; 
                 padding: 20px;
@@ -284,7 +310,7 @@
             }
             .btn-option {
                 width: 100%;
-                min-height: 55px; /* 給予舒服的按壓高度 */
+                min-height: 55px;
             }
             .bingo-grid { gap: 6px; }
             .btn-regenerate, .btn-save { width: 100%; }
@@ -298,8 +324,12 @@
     
     <div id="dialog-view">
         <div class="story-area">
-            <div class="story-en" id="text-en">Loading...</div>
-            <div class="story-zh" id="text-zh">載入中...</div>
+            <img src="https://drive.google.com/thumbnail?id=1UGDI2ozun1Vc2TUBD3kaiRsYiR9AJy27&sz=w1000" alt="茶樓掌櫃" class="npc-img">
+            
+            <div class="story-text-container">
+                <div class="story-en" id="text-en">Loading...</div>
+                <div class="story-zh" id="text-zh">載入中...</div>
+            </div>
         </div>
         <div class="options-area" id="options-container"></div>
     </div>
@@ -401,7 +431,7 @@
     const storyData = {
         "Start": {
             en: "Welcome to Ximending! How are you exploring this maze today?",
-            zh: "翻開奇談書。歡迎來到西門町，今天你打算如何探索這座都市迷宮？",
+            zh: "我是這裡的茶樓掌櫃。翻開奇談書，今天你打算如何探索西門町這座都市迷宮？",
             options: [
                 { text: "Solo 孤狼單刷", target: "Pace" },
                 { text: "Group 公會組隊", target: "Pace" },
@@ -410,7 +440,7 @@
         },
         "Pace": {
             en: "Target confirmed. How much time do you have to complete this mission?",
-            zh: "人數確認。那麼，你們這次的探險有多少時間可以揮霍？",
+            zh: "客官人數確認。那麼，你們這次的探險有多少時間可以揮霍？",
             options: [
                 { text: "1 Hour 快速突擊", target: "Budget" },
                 { text: "3 Hours 深度潛入", target: "Budget" },
@@ -419,7 +449,7 @@
         },
         "Budget": {
             en: "Resources check. How much Gold do you plan to spend today?",
-            zh: "盤點裝備。進入西門町，你們今天的金幣預算落在哪個區間？",
+            zh: "出門在外得盤點銀兩。進入街區，你們今天的預算落在哪個區間？",
             options: [
                 { text: "Low 銅板生存", target: "Stamina", data: "low" },
                 { text: "Mid 正常發揮", target: "Stamina", data: "mid" },
@@ -429,7 +459,7 @@
         },
         "Stamina": {
             en: "Evaluating physical specs. What is your current combat/stamina level?",
-            zh: "評估機體狀態。說實話，你目前的體力與腳力等級落在哪個階段？",
+            zh: "看客官面相……說實話，你目前的體力與腳力戰力等級在哪個階段？",
             options: [
                 { text: "Weak 戰五渣", target: "Transport" },
                 { text: "Normal 尋常冒險者", target: "Transport" },
@@ -457,7 +487,7 @@
         },
         "DietType": {
             en: "Dietary style protocol. What kind of food container interests you?",
-            zh: "飲食偏好調查。巡禮西門町時，你更傾向哪一種用餐或歇腳的形式？",
+            zh: "既然來到我這茶樓，順便問問：歇腳時你更傾向哪一種用餐的形式？",
             options: [
                 { text: "Snacks 街頭街邊小吃", target: "DietVeg", data: "snacks" },
                 { text: "Cafe 文青下午茶咖啡廳", target: "DietVeg", data: "cafe" },
@@ -467,7 +497,7 @@
         },
         "DietVeg": {
             en: "Dietary lifestyle filter. Any specific vegetarian requests?",
-            zh: "飲食型態過濾。請問你的公會或個人是否有特定的素食習慣？",
+            zh: "茶點準備。請問你的公會或個人是否有特定的素食型態習慣？",
             options: [
                 { text: "Meat 葷食無忌 (含肉類海鮮)", target: "Theme", data: "meat" },
                 { text: "Veg 蔬食 / 素食主義", target: "VegType", data: "veg" }
@@ -476,7 +506,7 @@
         },
         "VegType": {
             en: "Vegetarian specification sub-classification.",
-            zh: "素食類別細分。為了精準對應隱藏版情報，請問具體的素食規範是？",
+            zh: "茹素也是一門講究。為了精準對應情報，具體的素食規範是？",
             options: [
                 { text: "Vegan 全素 / 純素", target: "Theme", data: "vegan" },
                 { text: "LactoOvo 蛋奶素", target: "Theme", data: "lacto-ovo" },
@@ -486,7 +516,7 @@
         },
         "Theme": {
             en: "Parameters set. Finally, what kind of vibe are you hunting for in the streets?",
-            zh: "參數全數鎖定。最後，你最想在街頭尋找哪種氣息的都市傳說？",
+            zh: "參數全數鎖定！最後一問，你最想在街頭尋找哪種氣息的都市傳說？",
             options: [
                 { text: "History 歷史與遺跡", target: "End_Card", data: "History" },
                 { text: "Subculture 次文化與潮流", target: "End_Card", data: "Subculture" },
